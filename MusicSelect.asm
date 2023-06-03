@@ -662,3 +662,6 @@ HOOK @ $806dce4c # hook in sqVsMelee/setNext when we are changing to main menu
     done:
     stb	r30, 0x0448 (r3) # original line
 }
+
+# fixes the code not working on expansion stages if build doesn't have salty runback fix
+op NOP @ $8010F9C0
