@@ -220,6 +220,12 @@ HOOK @ $806b6178 # moveCursor
 {
     lwz r3, 0x0200 (r30) # original instruction
 
+    lis r9, 0x805b
+    ori r9, r9, 0x8ba0
+    lwz r10, 0x0280 (r9) # check we are on Main Menu sequence
+    cmpwi r10, 1
+    beq %end%            # if we are, skip
+
     lis r9, 0x8000      # \
     ori r9, r9, 0x2810  # |
     lwz r10, 0x1C (r9)  # | 
@@ -636,6 +642,7 @@ HOOK @ $8010f9e4 # hook just before calling setBgmId when loading stage
     mr r6, r7               # set r6 (param4 for setBgmId) to song ID, which will force it to be picked
     li r7, 0
     stw r7, 0x8 (r10)       # set stored song ID to 0
+    stw r7, 0x1C (r10)      # set stored address for muSelectStageTask to 0 as well, since we are done
 
     done:
     mr r4, r28 # original line
