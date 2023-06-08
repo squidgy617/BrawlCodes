@@ -6,7 +6,11 @@ Holding start to select a stage chooses random alt [Squidgy]
 # 0x0010 = Z
 # 0x0020 = R
 # 0x0040 = L
-HOOK @ $8053e0d8
+
+# this code hooks to a part of the Custom SD File Loader function, which is in StageFiles.asm
+# the function starts at 8053E000
+# old version hooked to 8053e0d8
+HOOK @ $8053e0bc
 {
     lhz r16, 0x0002 (r28) # The original code, stores the button pressed in r16
     cmpwi r16, randomButton # If button pressed is our random button (r28 is button pressed)
