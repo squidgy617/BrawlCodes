@@ -17,6 +17,6 @@ Song delay is ignored when selecting a song with this method.
 ### Holding start to select a stage chooses random alt
 This code makes it so that holding "Start" to pick a stage, including selecting a random stage, will cause the stage alt to be picked at random (e.g. it will choose between the main alt, R-alt, L-alt, etc etc).
 
-Currently, this only chooses between the default stage, L-alt, R-alt, and Z-alt.
+Currently, this only chooses between the default stage, L-alt, R-alt, and Z-alt. It can be edited relatively easily to choose between more.
 
 This code only works with Project+'s stage list system.
