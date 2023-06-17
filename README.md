@@ -15,7 +15,7 @@ This functionality only works in versus mode, not special versus, training, or r
 Song delay is ignored when selecting a song with this method.
 
 ### Holding start to select a stage chooses random alt
-This code makes it so that holding "Start" when picking a stage, including selecting a random stage, the stage alt to load will be picked at random (e.g. it will choose between the main alt, R-alt, L-alt, etc etc).
+This code makes it so that holding "Start" to pick a stage, including selecting a random stage, will cause the stage alt to be picked at random (e.g. it will choose between the main alt, R-alt, L-alt, etc etc).
 
 Currently, this only chooses between the default stage, L-alt, R-alt, and Z-alt.
 
