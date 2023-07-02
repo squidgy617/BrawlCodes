@@ -20,11 +20,48 @@ Select music for match on SSS [Squidgy]
 # 80002824 - we use this address for SSS page
 # 80002828 - we use this address to store the current mode
 # 8000282C - this is where we store muSelectStageTask since it is not stored normally. This is used to...
+# 80002830 - port 1 hidden alt
+# 80002834 - port 2 hidden alt
+# 80002838 - port 3 hidden alt
+# 8000283C - port 4 hidden alt
 # ...get the frame count, and we also use an offset from this to get cursor positions
 
 # --FLAG STATES--
 # 1 - going to My Music, 2 - My Music opened, 3 - song chosen, 4 - backing out of My Music, 
 # 5 - returning from My Music, 6 - back to SSS, 7 - change to correct page
+
+# macro to store selected hidden alt so it can load when picking songs
+.macro storeHiddenAlt(<baseAddress>,<storeAddress>)
+{
+    lis r4, 0x9018                  # \ base address for port hidden alt status
+    ori r4, r4, <baseAddress>       # /
+
+    lis r10, 0x0004                 # \ offset to hidden alt status
+    ori r10, r10, 0x3AD8            # |
+    lwzx r4, r10 (r4)               # / store the status in r4
+
+    lis r9, 0x8000                  # \ address where we WILL store port hidden alt
+    ori r9, r9, <storeAddress>      # /
+
+    stw r4, 0 (r9)                  # store status in our store location
+}
+
+# macro to retrieve any selected hidden alts
+.macro retrieveHiddenAlt(<baseAddress>,<storeAddress>)
+{
+    lis r9, 0x8000                  # \ address where hidden alt is stored
+    ori r9, r9, <storeAddress>      # |
+    lwz r9, 0 (r9)                  # /
+
+    lis r8, 0x9018                  # \ base address for port hidden alt status
+    ori r8, r8, <baseAddress>       # /
+
+    lis r10, 0x0004                 # \ offset to hidden alt status
+    ori r10, r10, 0x3AD8            # |
+    add r8, r10, r8                 # / final address
+
+    stw r9, 0 (r8)                  # store hidden alt status
+}
 
 # this hook makes our button work on SSS
 HOOK @ $806b5864 # hook where we check if A is being pressed on SSS
@@ -261,6 +298,12 @@ HOOK @ $806dcb50 # hook for transitioning to a match
     ori r4, r4, 0x6000	# | address where the SSS page is
     lbz r4, 0 (r4)	    # |
     stb r4, 0x14 (r9)	# / store current page
+
+    # store hidden alts if any were selected
+    %storeHiddenAlt(0x0b40, 0x2830)
+    %storeHiddenAlt(0x0b9C, 0x2834)
+    %storeHiddenAlt(0x0bf8, 0x2838)
+    %storeHiddenAlt(0x0c54, 0x283C)
 
     # if we're on SSS and flag is 1, go to main menu
     li r0, 0x10 # set switch/case to pick main menu option
@@ -554,7 +597,7 @@ HOOK @ $806be64c # runs every frame on process/[scMemoryChange]
     li r0, 0 # original line
 }
 
-# this hook makes the game think we are changing pages when returning to SSS from My Music
+# this hook makes the game think we are changing pages when returning to SSS from My Music, and also retrieves hidden alts
 HOOK @ $806b58c8 # every frame, if we pressed a button, check that we were pressing page button on SSS
 {
     lis r5, 0x8000      # \
@@ -565,6 +608,12 @@ HOOK @ $806b58c8 # every frame, if we pressed a button, check that we were press
 
     li r10, 0           # \
     stw r10, 0 (r5)     # / set our flag to 0 - we are done
+
+    # if any hidden alts were selected, retrieve them
+    %retrieveHiddenAlt(0x0b40, 0x2830)
+    %retrieveHiddenAlt(0x0b9C, 0x2834)
+    %retrieveHiddenAlt(0x0bf8, 0x2838)
+    %retrieveHiddenAlt(0x0c54, 0x283C)
 
     lwz r10, 0x14 (r5)  # | get stored page
 
@@ -664,7 +713,11 @@ HOOK @ $806dce4c # hook in sqVsMelee/setNext when we are changing to main menu
     stw r7, 0x10 (r5)   # |
     stw r7, 0x14 (r5)   # |
     stw r7, 0x18 (r5)   # |
-    stw r7, 0x1C (r5)   # /
+    stw r7, 0x1C (r5)   # |
+    stw r7, 0x20 (r5)   # |
+    stw r7, 0x24 (r5)   # |
+    stw r7, 0x28 (r5)   # |
+    stw r7, 0x2C (r5)   # /
 
     done:
     stb	r30, 0x0448 (r3) # original line
