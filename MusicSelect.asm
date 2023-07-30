@@ -280,6 +280,32 @@ HOOK @ $806dcb50 # hook for transitioning to a match
     cmpwi r0, 0x7 # if we are not changing stages, check if we're returning from My Music
     bne %end%
 
+    lis r12, 0x8002     # \ call getInstance/[gfSceneManager]
+    ori r12, r12 0xd018 # |
+    mtctr r12           # |
+    bctrl               # | scene manager address placed in r3
+    lwz r9, 0x0284 (r3) # | offset 284 from scene manager stores stage builder/regular stage
+    cmpwi r9, 3         # | 3 means stage builder, 1 means regular
+    bne flagCheck       # / if it's not a stage builder stage, go to flag check
+    
+    lis r9, 0x8000      # \
+    ori r9, r9, 0x2810  # / get stored values
+
+    li r7, 0            # \ reset all stored values to 0
+    stw r7, 0 (r9)      # |
+    stw r7, 0x8 (r9)    # |
+    stw r7, 0xC (r9)    # |
+    stw r7, 0x10 (r9)   # |
+    stw r7, 0x14 (r9)   # |
+    stw r7, 0x18 (r9)   # |
+    stw r7, 0x1C (r9)   # |
+    stw r7, 0x20 (r9)   # |
+    stw r7, 0x24 (r9)   # |
+    stw r7, 0x28 (r9)   # |
+    stw r7, 0x2C (r9)   # /
+    b %end%             # go to end
+
+    flagCheck:
     lis r9, 0x8000     # \
     ori r9, r9, 0x2810 # |
     lwz r3, 0 (r9)     # | get flag
