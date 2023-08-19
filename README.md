@@ -19,4 +19,4 @@ This code makes it so that holding "Start" to pick a stage, including selecting 
 
 Currently, this only chooses between the default stage, L-alt, R-alt, and Z-alt. It can be edited relatively easily to choose between more.
 
-This code only works with Project+'s stage list system.
+This code only works with Project+'s stage list system. There are two versions of the code - one meant for P+ 2.4.2 and onward, and one meant for P+Ex 1.3 and onward.
