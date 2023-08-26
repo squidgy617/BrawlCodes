@@ -73,3 +73,23 @@ HOOK @ $8053e0d8
 
     li r16, 0x0040 # L-alt
 }
+
+#######################
+Item Replacer [Squidgy]
+#######################
+.macro replaceItem(<oldItem>,<newItem>)
+{
+    cmpwi r6, <oldItem>
+    bne done
+    li r6, <newItem>
+}
+
+HOOK @ $8098d528 
+{
+    # copy this line to replace more items
+    # first parameter is the item to replace, second parameter is the new item
+    %replaceItem(0xD, 0x9) # Replace Cracker Launcher with Capsule
+
+    done:
+    stw	r6, 0x08C0 (r29)
+}
