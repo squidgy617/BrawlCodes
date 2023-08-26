@@ -20,3 +20,8 @@ This code makes it so that holding "Start" to pick a stage, including selecting 
 Currently, this only chooses between the default stage, L-alt, R-alt, and Z-alt. It can be edited relatively easily to choose between more.
 
 This code only works with Project+'s stage list system. There are two versions of the code - one meant for P+ 2.4.2 and onward, and one meant for P+Ex 1.3 and onward.
+
+### Item Replacer
+This code allows you to specify items to be replaced with other items whenever they spawn. For example, by default the code has a line to replace the Cracker Launcher with a Capsule, so whenever a Cracker Launcher would spawn a Capsule will spawn instead.
+
+The code is designed to be easy to edit. To add more items to be replaced, simply copy the line with the `%replaceItem()` call and change the parameters - the first parameter is the item ID to replace, and the second is the item ID to replace it with.
