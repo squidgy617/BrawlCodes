@@ -80,7 +80,7 @@ Item Replacer [Squidgy]
 .macro replaceItem(<oldItem>,<newItem>)
 {
     cmpwi r6, <oldItem>
-    bne done
+    bne 0x8
     li r6, <newItem>
 }
 
@@ -90,6 +90,5 @@ HOOK @ $8098d528
     # first parameter is the item to replace, second parameter is the new item
     %replaceItem(0xD, 0x9) # Replace Cracker Launcher with Capsule
 
-    done:
     stw	r6, 0x08C0 (r29)
 }
