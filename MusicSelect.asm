@@ -20,11 +20,11 @@ Select music for match on SSS [Squidgy]
 # 80002824 - we use this address for SSS page
 # 80002828 - we use this address to store the current mode
 # 8000282C - this is where we store muSelectStageTask since it is not stored normally. This is used to...
+# ...get the frame count, and we also use an offset from this to get cursor positions
 # 80002830 - port 1 hidden alt
 # 80002834 - port 2 hidden alt
 # 80002838 - port 3 hidden alt
 # 8000283C - port 4 hidden alt
-# ...get the frame count, and we also use an offset from this to get cursor positions
 
 # --FLAG STATES--
 # 1 - going to My Music, 2 - My Music opened, 3 - song chosen, 4 - backing out of My Music, 
@@ -63,16 +63,22 @@ Select music for match on SSS [Squidgy]
     stw r9, 0 (r8)                  # store hidden alt status
 }
 
+# macro to get the scene manager address
+.macro getSceneManager()
+{
+    lis r12, 0x8002     # \ call getInstance/[gfSceneManager]
+    ori r12, r12 0xd018 # |
+    mtctr r12           # |
+    bctrl               # / scene manager address placed in r3
+}
+
 # this hook makes our button work on SSS
 HOOK @ $806b5864 # hook where we check if A is being pressed on SSS
 {
     # check to ensure this only works in regular VS mode
     mr r9, r3   # store r3
 
-    lis r12, 0x8002     # \ call getInstance/[gfSceneManager]
-    ori r12, r12 0xd018 # |
-    mtctr r12           # |
-    bctrl               # | scene manager address placed in r3
+    %getSceneManager()  # \ get scene manager
     lwz r3, 0x10 (r3)   # | load currentSequence (10th offset from scene manager) into r3
     lwz r3, 0 (r3)      # / load address of currentSequence name into r3
 
@@ -88,11 +94,13 @@ HOOK @ $806b5864 # hook where we check if A is being pressed on SSS
     mr r3, r9           # | restore r3
     bne skip            # / skip
 
-    lis r8, 0x805b
-    ori r8, r8, 0x8ba0
-    lwz r8, 0x0280 (r8) # check we are on Main Menu sequence
-    cmpwi r8, 1
-    beq skip            # if we are, skip
+    mr r3, r9           # \ store r3
+    %getSceneManager()  # | get scene manager
+    mr r8, r3           # | store scene manager in r8
+    mr r3, r9           # | restore r3
+    lwz r8, 0x0280 (r8) # |check we are on Main Menu sequence
+    cmpwi r8, 1         # |
+    beq skip            # / if we are, skip
 
     rlwinm. r0, r3, 0, button, button # if button is being pressed, treat that as a valid stage select button
     bne goToMyMusic
@@ -144,10 +152,7 @@ HOOK @ $806b5780
     # check to ensure this only works in regular VS mode
     mr r9, r3   # store r3
 
-    lis r12, 0x8002     # \ call getInstance/[gfSceneManager]
-    ori r12, r12 0xd018 # |
-    mtctr r12           # |
-    bctrl               # | scene manager address placed in r3
+    %getSceneManager()  # \ get scene manager
     lwz r3, 0x10 (r3)   # | load currentSequence (10th offset from scene manager) into r3
     lwz r3, 0 (r3)      # / load address of currentSequence name into r3
 
@@ -163,11 +168,13 @@ HOOK @ $806b5780
     mr r3, r9           # | restore r3
     bne skip            # / skip
 
-    lis r8, 0x805b
-    ori r8, r8, 0x8ba0
-    lwz r8, 0x0280 (r8) # check we are on Main Menu sequence
-    cmpwi r8, 1
-    beq skip            # if we are, skip
+    mr r3, r9           # \ store r3
+    %getSceneManager()  # | get scene manager
+    mr r8, r3           # | store scene manager in r8
+    mr r3, r9           # | restore r3
+    lwz r8, 0x0280 (r8) # |check we are on Main Menu sequence
+    cmpwi r8, 1         # |
+    beq skip            # / if we are, skip
 
     rlwinm. r0, r3, 0, button, button # if button is being pressed, treat that as a valid stage select button
     bne %end%
@@ -201,10 +208,7 @@ HOOK @ $806b589c
     # check to ensure this only works in regular VS mode
     mr r9, r3   # store r3
 
-    lis r12, 0x8002     # \ call getInstance/[gfSceneManager]
-    ori r12, r12 0xd018 # |
-    mtctr r12           # |
-    bctrl               # | scene manager address placed in r3
+    %getSceneManager()  # \ get scene manager
     lwz r3, 0x10 (r3)   # | load currentSequence (10th offset from scene manager) into r3
     lwz r3, 0 (r3)      # / load address of currentSequence name into r3
 
@@ -220,11 +224,13 @@ HOOK @ $806b589c
     mr r3, r9           # | restore r3
     bne skip            # / skip
 
-    lis r8, 0x805b
-    ori r8, r8, 0x8ba0
-    lwz r8, 0x0280 (r8) # check we are on Main Menu sequence
-    cmpwi r8, 1
-    beq skip            # if we are, skip
+    mr r3, r9           # \ store r3
+    %getSceneManager()  # | get scene manager
+    mr r8, r3           # | store scene manager in r8
+    mr r3, r9           # | restore r3
+    lwz r8, 0x0280 (r8) # |check we are on Main Menu sequence
+    cmpwi r8, 1         # |
+    beq skip            # / if we are, skip
 
     rlwinm. r0, r3, 0, button, button # if button is being pressed, treat that as a valid stage select button
     bne %end%
@@ -257,11 +263,14 @@ HOOK @ $806b6178 # moveCursor
 {
     lwz r3, 0x0200 (r30) # original instruction
 
-    lis r9, 0x805b
-    ori r9, r9, 0x8ba0
-    lwz r10, 0x0280 (r9) # check we are on Main Menu sequence
-    cmpwi r10, 1
-    beq %end%            # if we are, skip
+    mr r10, r3  # store r3 in r10
+
+    %getSceneManager()      # \ get scene manager
+    mr r9, r3               # | store scene manager in r9
+    mr r3, r10              # | restore r3
+    lwz r10, 0x0280 (r9)    # | check we are on Main Menu sequence
+    cmpwi r10, 1            # |
+    beq %end%               # / if we are, skip
 
     lis r9, 0x8000      # \
     ori r9, r9, 0x2810  # |
@@ -280,10 +289,7 @@ HOOK @ $806dcb50 # hook for transitioning to a match
     cmpwi r0, 0x7 # if we are not changing stages, check if we're returning from My Music
     bne %end%
 
-    lis r12, 0x8002     # \ call getInstance/[gfSceneManager]
-    ori r12, r12 0xd018 # |
-    mtctr r12           # |
-    bctrl               # | scene manager address placed in r3
+    %getSceneManager()  # \ get scene manager
     lwz r9, 0x0284 (r3) # | offset 284 from scene manager stores stage builder/regular stage
     cmpwi r9, 3         # | 3 means stage builder, 1 means regular
     bne flagCheck       # / if it's not a stage builder stage, go to flag check
@@ -360,10 +366,20 @@ HOOK @ $8117de68 # My Music function that runs every frame
     cmpwi r4, 1         # |
     bne done            # / if flag isn't 1, just do original code
 
-    lis r8, 0x8150
-    ori r8, r8, 0x9ea0 # store address used for cursor and SSS icon
+    # lis r8, 0x8150
+    # ori r8, r8, 0x9ea0 # store address used for cursor and SSS icon
 	
     mr r9, r3
+
+    %getSceneManager()      # \ get scene manager
+    lis r4, 0x806A          # |
+    ori r4, r4 0xDBE4       # | store address of string "muMenuMain" in r4
+    lis r12, 0x8002         # | call searchScene
+    ori r12, r12, 0xd3f4    # |
+    mtctr r12               # |
+    bctrl                   # | r3 is now muMenuMain
+    lwz r8, 0x38c (r3)      # | offset 0x38c of muMenuMain is muProcOptSong
+    lwz r8, 0x694 (r8)      # / offset 0x694 of muProcOptSong is muSelectStageTask
 
     lwz r3, 0x0050 (r8)   # \ hides cursor
     lwz r4, 0x0200 (r8)   # |
@@ -453,10 +469,7 @@ HOOK @ $8117f07c # when playing a song on my music
 
     lis r8, 0x8000     # \ storing song ID for stage to use
     ori r8, r8, 0x2810 # | address where we will store song ID
-    lis r7, 0x8152     # |
-    ori r7, r7, 0x1F00 # | address with currently playing song ID
-    lwz r7, 0 (r7)     # |
-    stw r7, 0x8 (r8)   # / set stored song ID to the one we are playing
+    stw r30, 0x8 (r8)  # / set stored song ID to the one we are playing - r30 stores current song ID at this point
 }
 
 # this hook is to make it so pressing our button will keep the song playing even if it is already playing
@@ -514,8 +527,10 @@ HOOK @ $8117e670 # exit/[muProcOptSong] (when exiting My Music)
     #li r10, 0x2		    # |
     #stw r10, 0x0288 (r9) 	# / set flag used by scene manager to 2, triggering scene change
 
-    lis r9, 0x805b          # \ change scenes
-    ori r9, r9, 0x8ba0      # | this address is the scene manager
+    mr r10, r3              # \ change scenes - store r3 first
+    %getSceneManager()      # | get scene manager
+    mr r9, r3               # | put scene manager in r9
+    mr r3, r10              # | restore r3
     lwz r9, 0x4 (r9)        # | this offset gives us the flag to determine what scene to change to
     lwz r10, 0x18 (r8)      # | load the scene number we stored - right now is always 0x1
     stw r10, 0x0AB0 (r9)    # /
@@ -595,8 +610,10 @@ HOOK @ $806dcbc8 # when transitioning to VS, we set this to tell the game to go 
     li r10, 6           # \
     stw r10, 0 (r5)     # / set our flag to 6
 
-    lis r5, 0x805b          # \ set flag indicating current screen to 1
-    ori r5, r5, 0x8ba0      # | this is used sometimes to check if we are on SSS
+    mr r10, r3              # \ store r3
+    %getSceneManager()      # | get scene manager
+    mr r5, r3               # | put scene manager in r5
+    mr r3, r10              # | restore r3
     li r10, 1               # |
     stw r10, 0x0284 (r5)    # /
 
