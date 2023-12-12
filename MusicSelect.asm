@@ -614,8 +614,8 @@ HOOK @ $806dcbc8 # when transitioning to VS, we set this to tell the game to go 
     %getSceneManager()      # | get scene manager
     mr r5, r3               # | put scene manager in r5
     mr r3, r10              # | restore r3
-    li r10, 1               # |
-    stw r10, 0x0284 (r5)    # /
+    li r10, 1               # | set flag to 1
+    stw r10, 0x0284 (r5)    # / setting this flag to 1 will make it go to SSS
 
     done:
     stw r24, 0xc (r15) # original line
