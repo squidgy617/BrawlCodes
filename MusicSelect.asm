@@ -7,10 +7,14 @@ Select music for match on SSS [Squidgy]
 # Only available in regular VS mode
 
 # --CONTROL OPTIONS--
-# button values : 21 (X), 20 (Y)
-.alias button = 20
-# classicButton values : 12 (X), 14 (Y)
-.alias classicButton = 14
+# Button to open song select
+# button values : 21 (X), 20 (Y), 19 (Start/+)
+.alias button = 19
+# Button to select a song in song select
+# selectButton values : 21 (X), 20 (Y), 23 (Start/+)
+.alias selectButton = 23
+# Recommended to use the same button for opening song select and picking a song, 
+# but note that some buttons (such as Start) use a different number for each
 
 # --CUSTOM ADDRESSES USED--
 # 80002810 - we use this address for a flag that tells us what step we are on
@@ -104,8 +108,6 @@ HOOK @ $806b5864 # hook where we check if A is being pressed on SSS
 
     rlwinm. r0, r3, 0, button, button # if button is being pressed, treat that as a valid stage select button
     bne goToMyMusic
-    rlwinm. r0, r3, 0, classicButton, classicButton
-    bne goToMyMusic
 
     # this block here is to force-select the stage after picking a song
     lis r9, 0x8000     # \
@@ -178,8 +180,6 @@ HOOK @ $806b5780
 
     rlwinm. r0, r3, 0, button, button # if button is being pressed, treat that as a valid stage select button
     bne %end%
-    rlwinm. r0, r3, 0, classicButton, classicButton
-    bne %end%
 
     # this block here is to force-select the stage after picking a song
     lis r9, 0x8000     # \
@@ -233,8 +233,6 @@ HOOK @ $806b589c
     beq skip            # / if we are, skip
 
     rlwinm. r0, r3, 0, button, button # if button is being pressed, treat that as a valid stage select button
-    bne %end%
-    rlwinm. r0, r3, 0, classicButton, classicButton
     bne %end%
 
     # this block here is to force-select the stage after picking a song
@@ -438,9 +436,7 @@ HOOK @ $8117f030 # when checking what button is pressed with tracklist open
     cmpwi r7, 2         # |
     bne done            # / if flag isn't 2 (on My Music from SSS)
 
-    rlwinm. r0, r29, 0, button, button # if button is being pressed, treat that as a valid select button
-    bne buttonPressed
-    rlwinm. r0, r29, 0, classicButton, classicButton
+    rlwinm. r0, r29, 0, selectButton, selectButton # if button is being pressed, treat that as a valid select button
     bne buttonPressed
 
     done:
@@ -556,26 +552,32 @@ HOOK @ $8117e4b0 # check if B is pressed when My Music tracklist is open
     rlwinm. r0, r3, 0, 26, 26 # original line
 }
 
-# this hook is to ensure we go all the way back to SSS when B is pressed
-HOOK @ $8117e4bc # when B is pressed while My Music tracklist is open
+# this hook is to ensure we back all the way out to SSS when B is pressed, and to play the correct sound based on the button pressed
+HOOK @ $8117e4e4 # when setting the sound ID for the button pressed while My Music tracklist is open
 {
+    li r4, 2            # original line, sets sound ID to backing out sound
+
     lis r9, 0x8000      # \
     ori r9, r9, 0x2810  # |
     lwz r8, 0 (r9)      # | get flag
     cmpwi r8, 2         # |
-    bne done            # / if flag isn't 2, skip
+    bne nextCheck       # / if flag isn't 2 (pressed B), check if it's 4
 
     li r8, 4
-    stw r8, 0 (r9) # | set flag to 4
-    
+    stw r8, 0 (r9)      # | set flag to 4
+
     # This fixes an issue where looking at the songs for a stage alt would force that alt to load when the stage was selected
     li r9, 0            # \
     lis r8, 0x8053      # |
     ori r8, r8, 0xe000  # | this address stores the chosen stage ID, which is used to determine if we should reload or not
     sth r9, 0x0FB8 (r8) # / by setting it to 0, the game will see no stage as loaded, and reload the file
-    
-    done:
-    lbz	r0, 0x0674 (r30) # original code
+
+    b %end%
+
+    nextCheck:
+    cmpwi r8, 4     # \
+    bne %end%       # | if flag isn't 4 (pressed custom button), skip
+    li r4, 1        # / otherwise, set sound ID to confirmation sound (we selected a song instead of backing out)
 }
 
 # this hook makes sure we go back to SSS from My Music
@@ -593,6 +595,71 @@ HOOK @ $806b5670 # check if B is pressed on My Music screen
 
     done:
     rlwinm. r0, r0, 0, 22, 22 # original line
+}
+
+# these hooks make it so we don't play a second backing out sound when we back out from music selection
+HOOK @ $806b567c # loading sound ID in buttonProc:muSelectStageTask (for My Music)
+{
+    li r4, 2            # original lines
+
+    lis r9, 0x8000      # \
+    ori r9, r9, 0x2810  # |
+    lwz r9, 0 (r9)      # | get flag
+    cmpwi r9, 4         # | check that flag is 4
+    bne %end%           # / if not, end
+
+    lis r12, 0x806b     # jump to address after playSE call
+    ori r12, r12 0x5698
+    mtctr r12
+    bctr
+}
+
+# same as above, but for process:muMenuMain
+HOOK @ $806cea08
+{
+    li r4, 2            # original lines
+
+    lis r9, 0x8000      # \
+    ori r9, r9, 0x2810  # |
+    lwz r9, 0 (r9)      # | get flag
+    cmpwi r9, 4         # | check that flag is 4
+    bne %end%           # / if not, end
+
+    lis r12, 0x806c     # jump to address after playSE call
+    ori r12, r12 0xea24
+    mtctr r12
+    bctr
+}
+
+# this hook makes it so we play a normal confirmation sound instead of the stage select sound when opening the music select
+HOOK @ $806b5cec # loading sound ID in buttonProc:muSelectStageTask (for SSS)
+{
+    li r4, 19 # original line
+
+    lis r9, 0x8000      # \
+    ori r9, r9, 0x2810  # |
+    lwz r9, 0 (r9)      # | get flag
+    cmpwi r9, 1         # | check that flag is 1
+    bne %end%           # / if not, end
+
+    li r4, 1 # play normal confirm sound instead
+}
+
+# this hook makes it so we don't play the audience cheer when opening the music select
+HOOK @ $806b46bc # loading sound ID in selectingProc:muSelectStageTask (for SSS)
+{
+    li r4, 22 # original line
+
+    lis r9, 0x8000      # \
+    ori r9, r9, 0x2810  # |
+    lwz r9, 0 (r9)      # | get flag
+    cmpwi r9, 1         # | check that flag is 1
+    bne %end%           # / if not, end
+
+    lis r12, 0x806b     # jump to address after playSE call
+    ori r12, r12, 0x46d4
+    mtctr r12
+    bctr
 }
 
 # this hook makes it so we go to SSS after backing out from My Music - VS
