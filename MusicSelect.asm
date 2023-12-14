@@ -355,6 +355,24 @@ HOOK @ $806cc058 # The instruction for when we go to main menu
     stw	r3, 0x03D0 (r31) # original code
 }
 
+# this hook makes it so that the icons, thumbnails, and other elements don't display when we go to My Music
+HOOK @ $806b10d0 # when we call dispPage in muSelectStageTask:initProcWithScreen
+{
+    lis r4, 0x8000      # \
+    ori r4, r4, 0x2810  # |
+    lwz r4, 0 (r4)      # | get flag
+    cmpwi r4, 1         # | if flag isn't 1 (going to My Music), just run original code
+    bne done            # /
+
+    lis r12, 0x806b     # jump to address after dispPage call
+    ori r12, r12 0x10dc
+    mtctr r12
+    bctr
+
+    done:
+    lwz r4, 0x0228 (r26) # original code
+}
+
 # this hook makes the tracklist open and hides elements when we go to My Music
 HOOK @ $8117de68 # My Music function that runs every frame
 {
@@ -589,12 +607,38 @@ HOOK @ $806b5670 # check if B is pressed on My Music screen
     cmpwi r9, 4         # |
     bne done            # / if flag isn't 4, just do original code
 
+    # this snippet makes it so we pause the frames while we return to SSS
+    lis r3, 0x805A      # \ get gfApplication
+    lwz r3, -0x54 (r3)  # | gfApplication stored in r3
+    addi r3, r3, 0xD0   # | gfApplication + 0xD0 = gfKeepFrameBuffer stored in r3
+    lis r12, 0x8002     # | call startKeepFrameBuffer (mislabled in symbol map)
+    ori r12, r12 0x4e20 # |
+    mtctr r12           # |
+    bctrl               # /
+
     li r0, 0x200 # count as we are pressing B
     cmpwi r0, 0
     b %end%
 
     done:
     rlwinm. r0, r0, 0, 22, 22 # original line
+}
+
+# this hook makes it so the cursor doesn't display for a split second when backing out of My Music
+HOOK @ $806b4290 # where we restore the cursor in selectingProc/[muSelectStageTask]
+{
+    lwz r3, 0x0050 (r27) # original line
+
+    lis r4, 0x8000      # \
+    ori r4, r4, 0x2810  # |
+    lwz r4, 0 (r4)      # | get flag
+    cmpwi r4, 4         # |
+    bne %end%           # / if flag is not 4, just do original code
+
+    lis r12, 0x806b     # jump to address after Insert call
+    ori r12, r12, 0x42b0
+    mtctr r12
+    bctr
 }
 
 # these hooks make it so we don't play a second backing out sound when we back out from music selection
@@ -716,9 +760,6 @@ HOOK @ $806b58c8 # every frame, if we pressed a button, check that we were press
     cmpwi r10, 7        # if flag is not 7, go to end
     bne done
 
-    li r10, 0           # \
-    stw r10, 0 (r5)     # / set our flag to 0 - we are done
-
     # if any hidden alts were selected, retrieve them
     %retrieveHiddenAlt(0x0b40, 0x2830)
     %retrieveHiddenAlt(0x0b9C, 0x2834)
@@ -734,6 +775,26 @@ HOOK @ $806b58c8 # every frame, if we pressed a button, check that we were press
     
     done:
     cmplwi r0, 7 # original code line
+}
+
+# this hook makes it so the page change sound doesn't play when returning to SSS from My Music
+HOOK @ $806b5a24 # when setting the sound ID for the page change sound
+{
+    li r4, 35           # original line
+
+    lis r5, 0x8000      # \
+    ori r5, r5, 0x2810  # |
+    lwz r6, 0 (r5)
+    cmpwi r6, 7         # if flag is not 7, go to end
+    bne %end%
+
+    li r6, 0
+    stw r6, 0 (r5)      # set flag to 0 - we are done
+
+    lis r12, 0x806b     # jump to address after playSE call
+    ori r12, r12, 0x5a3c
+    mtctr r12
+    bctr
 }
 
 # this hook checks if we are changing pages, and if so, doesn't set the flag to go to music select
