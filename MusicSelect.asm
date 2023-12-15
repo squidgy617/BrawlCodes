@@ -139,6 +139,16 @@ HOOK @ $806b5864 # hook where we check if A is being pressed on SSS
     b %end%
 
     goToMyMusic:
+
+    # this snippet makes it so we pause the frames while we go to My Music, so that the "Ready to Fight" text doesn't display
+    lis r3, 0x805A      # \ get gfApplication
+    lwz r3, -0x54 (r3)  # | gfApplication stored in r3
+    addi r3, r3, 0xD0   # | gfApplication + 0xD0 = gfKeepFrameBuffer stored in r3
+    lis r12, 0x8002     # | call startKeepFrameBuffer (mislabled in symbol map)
+    ori r12, r12 0x4e20 # |
+    mtctr r12           # |
+    bctrl               # /
+
     lis r9, 0x8000     # \
     ori r9, r9, 0x2810 # |
     li r4, 1           # |
@@ -265,7 +275,23 @@ HOOK @ $806b6178 # moveCursor
 
     %getSceneManager()      # \ get scene manager
     mr r9, r3               # | store scene manager in r9
+    
+    lwz r3, 0x10 (r9)       # \ load currentSequence (10th offset from scene manager) into r3
+    lwz r3, 0 (r3)          # / load address of currentSequence name into r3
+
+    lis r4, 0x8070          # \ load address of string "sqVsMelee" into r4
+    ori r4, r4, 0x17E0      # /
+
+    lis r12, 0x803f         # \ call strcmp
+    ori r12, r12, 0xa3fc    # |
+    mtctr r12               # |
+    bctrl                   # /
+
+    cmpwi r3, 0             # \ if strings don't match, skip
     mr r3, r10              # | restore r3
+    bne %end%               # / skip
+
+    mr r3, r10              # \ restore r3
     lwz r10, 0x0280 (r9)    # | check we are on Main Menu sequence
     cmpwi r10, 1            # |
     beq %end%               # / if we are, skip
