@@ -139,16 +139,6 @@ HOOK @ $806b5864 # hook where we check if A is being pressed on SSS
     b %end%
 
     goToMyMusic:
-
-    # this snippet makes it so we pause the frames while we go to My Music, so that the "Ready to Fight" text doesn't display
-    lis r3, 0x805A      # \ get gfApplication
-    lwz r3, -0x54 (r3)  # | gfApplication stored in r3
-    addi r3, r3, 0xD0   # | gfApplication + 0xD0 = gfKeepFrameBuffer stored in r3
-    lis r12, 0x8002     # | call startKeepFrameBuffer (mislabled in symbol map)
-    ori r12, r12 0x4e20 # |
-    mtctr r12           # |
-    bctrl               # /
-
     lis r9, 0x8000     # \
     ori r9, r9, 0x2810 # |
     li r4, 1           # |
@@ -711,6 +701,17 @@ HOOK @ $806b5cec # loading sound ID in buttonProc:muSelectStageTask (for SSS)
     lwz r9, 0 (r9)      # | get flag
     cmpwi r9, 1         # | check that flag is 1
     bne %end%           # / if not, end
+
+    # this snippet makes it so we pause the frames while we go to My Music, so that the "Ready to Fight" text doesn't display
+    mr r9, r3
+    lis r3, 0x805A      # \ get gfApplication
+    lwz r3, -0x54 (r3)  # | gfApplication stored in r3
+    addi r3, r3, 0xD0   # | gfApplication + 0xD0 = gfKeepFrameBuffer stored in r3
+    lis r12, 0x8002     # | call startKeepScreen (mislabled in symbol map)
+    ori r12, r12 0x4e20 # |
+    mtctr r12           # |
+    bctrl               # /
+    mr r3, r9
 
     li r4, 1 # play normal confirm sound instead
 }
