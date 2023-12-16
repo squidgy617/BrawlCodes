@@ -4,6 +4,8 @@ My personal Gecko/ASM codes for Super Smash Bros. Brawl.
 ## Codes
 
 ### Select music for match on SSS
+[Preview video](https://youtu.be/u14dE9Y7ulA?si=5xMiXxSQ923qKUI_)
+
 This code allows you to select what song you want to play during your next match by pressing a button while hovering over a stage.
 
 By default, press "Start" while hovering over a stage to open the track list. Press Start again to select the song and instantly start a match. Alternatively, press A to preview songs, or B to return to the SSS. You can change what button is used to trigger this by editing the aliases at the top of the code.
