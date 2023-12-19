@@ -29,6 +29,7 @@ Select music for match on SSS [Squidgy]
 # 80002834 - port 2 hidden alt
 # 80002838 - port 3 hidden alt
 # 8000283C - port 4 hidden alt
+# 80002840 - chosen stage alt, used to ensure replays load correct stage alt
 
 # --FLAG STATES--
 # 1 - going to My Music, 2 - My Music opened, 3 - song chosen, 4 - backing out of My Music, 
@@ -322,7 +323,8 @@ HOOK @ $806dcb50 # hook for transitioning to a match
     stw r7, 0x20 (r9)   # |
     stw r7, 0x24 (r9)   # |
     stw r7, 0x28 (r9)   # |
-    stw r7, 0x2C (r9)   # /
+    stw r7, 0x2C (r9)   # |
+    sth r7, 0x30 (r9)   # /
     b %end%             # go to end
 
     flagCheck:
@@ -451,6 +453,14 @@ HOOK @ $8117de68 # My Music function that runs every frame
 # this hook forces My Music to open the correct tracklist
 HOOK @ $8117defc # manipulate this instruction so that the correct track list is displayed
 {
+    lis r9, 0x8000      # \
+    ori r9, r9, 0x2810  # /
+
+    # store ASL input for replays
+    lis r7, 0x800C          # \ Get ASL input
+    lhz r7, -0x615E (r7)    # |
+    sth r7, 0x30 (r9)       # / store it for later
+
     lis r7, 0x805a      # \ load the chosen stage ID instead of a default
     lwz r7, 0xE0 (r7)   # | 0x805a00e0 - GameGlobal
     lwz r7, 0x14 (r7)   # | offset 0x14 - gmSelStageData
@@ -599,6 +609,10 @@ HOOK @ $8117e4e4 # when setting the sound ID for the button pressed while My Mus
 
     li r8, 4
     stw r8, 0 (r9)      # | set flag to 4
+
+    # clear stored ASL input
+    li r8, 0
+    sth r8, 0x30 (r9)
 
     # This fixes an issue where looking at the songs for a stage alt would force that alt to load when the stage was selected
     li r9, 0            # \
@@ -895,6 +909,25 @@ HOOK @ $8010f9e4 # hook just before calling setBgmId when loading stage
     mr r4, r28 # original line
 }
 
+# this hook ensures the correct ASL input is used for replays
+HOOK @ $80764f10 # just before checking the ASL input for replays
+{
+    stfs f1, 0x0038 (r30) # original line
+
+    lis r9, 0x8000           # \
+    ori r9, r9, 0x2810       # |
+    lhz r10, 0x30 (r9)       # | get stored ASL input
+    cmpwi r10, 0             # |
+    beq %end%                # / if no stored ASL input, end
+
+    # set stage alt correctly for replays
+    lis r8, 0x800C           # \ store ASL input at 800B9EA2
+    sth r10, -0x615E (r8)    # /
+
+    li r10, 0               # clear stored ASL input
+    sth r10, 0x30 (r9)
+}
+
 # this hook resets all of our stored values when we return to the main menu
 HOOK @ $806dce4c # hook in sqVsMelee/setNext when we are changing to main menu
 {
@@ -915,7 +948,8 @@ HOOK @ $806dce4c # hook in sqVsMelee/setNext when we are changing to main menu
     stw r7, 0x20 (r5)   # |
     stw r7, 0x24 (r5)   # |
     stw r7, 0x28 (r5)   # |
-    stw r7, 0x2C (r5)   # /
+    stw r7, 0x2C (r5)   # |
+    sth r7, 0x30 (r5)   # /
 
     done:
     stb	r30, 0x0448 (r3) # original line
