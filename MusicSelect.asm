@@ -296,6 +296,18 @@ HOOK @ $806b6178 # moveCursor
     stw r30, 0x1C (r9)  # store muSelectStageTask
 }
 
+# this hook makes it so that turn order is kept intact when stage selection option is set to taking turns
+HOOK @ $80055584 # gmSetRuleSelStage - when we set which player is in control
+{
+    lis r8, 0x8000     # \
+    ori r8, r8, 0x2810 # |
+    lwz r8, 0 (r8)     # | get flag
+    cmpwi r8, 7        # | if flag is 7 (coming from My Music), skip changing which player is in control
+    beq %end%          # /
+
+    stb r7, 0 (r5) # original line, sets which player is in control
+}
+
 # this hook makes it so our button sends us to My Music instead of starting the match - VS
 HOOK @ $806dcb50 # hook for transitioning to a match
 {
