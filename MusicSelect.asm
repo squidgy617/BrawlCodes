@@ -83,9 +83,10 @@ HOOK @ $806b5864 # hook where we check if A is being pressed on SSS
     # check to ensure this only works in regular VS mode
     mr r9, r3   # store r3
 
-    %getSceneManager()  # \ get scene manager
-    lwz r3, 0x10 (r3)   # | load currentSequence (10th offset from scene manager) into r3
-    lwz r3, 0 (r3)      # / load address of currentSequence name into r3
+    %getSceneManager()   # \ get scene manager
+    mr r10, r3           # | place scene manager into r10
+    lwz r3, 0x10 (r10)   # | load currentSequence (10th offset from scene manager) into r3
+    lwz r3, 0 (r3)       # / load address of currentSequence name into r3
 
     lis r4, 0x8070      # \ load address of string "sqVsMelee" into r4
     ori r4, r4, 0x17E0  # /
@@ -95,10 +96,51 @@ HOOK @ $806b5864 # hook where we check if A is being pressed on SSS
     mtctr r12               # |
     bctrl                   # /
 
+    cmpwi r3, 0         # \ if strings match, proceed
+    beq versus          # / proceed
+
+    lwz r3, 0x10 (r10)   # \ load currentSequence (10th offset from scene manager) into r3
+    lwz r3, 0 (r3)      # / load address of currentSequence name into r3
+
+    lis r4, 0x8070      # \ load address of string "sqSpMelee" into r4
+    ori r4, r4, 0x17F8  # /
+
+    lis r12, 0x803f         # \ call strcmp
+    ori r12, r12, 0xa3fc    # |
+    mtctr r12               # |
+    bctrl                   # /
+
+    cmpwi r3, 0         # \ if strings match, continue
+    beq special         # / proceed
+
+    lwz r3, 0x10 (r10)   # \ load currentSequence (10th offset from scene manager) into r3
+    lwz r3, 0 (r3)      # / load address of currentSequence name into r3
+
+    lis r4, 0x8070      # \ load address of string "sqTraining" into r4
+    ori r4, r4, 0x1870  # /
+
+    lis r12, 0x803f         # \ call strcmp
+    ori r12, r12, 0xa3fc    # |
+    mtctr r12               # |
+    bctrl                   # /
+
     cmpwi r3, 0         # \ if strings don't match, skip
+    beq training        # | proceed
     mr r3, r9           # | restore r3
     bne skip            # / skip
 
+    versus:
+    li r10, 1
+    b continue
+
+    special:
+    li r10, 3
+    b continue
+
+    training:
+    li r10, 12
+
+    continue:
     mr r3, r9           # \ store r3
     %getSceneManager()  # | get scene manager
     mr r8, r3           # | store scene manager in r8
@@ -145,8 +187,8 @@ HOOK @ $806b5864 # hook where we check if A is being pressed on SSS
     li r4, 1           # |
     stw r4, 0 (r9)     # / if we pressed the button, set the flag indicating to go to My Music
 
-    li r4, 1            # \ set the mode we will jump to from My Music - 1 is VS
-    stw r4, 0x18 (r9)   # / right now is always 1, this could be expanded to work with other modes
+    #li r4, 1            # \ set the mode we will jump to from My Music - 1 is VS, 2 is tourney, 3 is special versus
+    stw r10, 0x18 (r9)   # / right now is always 1, this could be expanded to work with other modes
 }
 
 # additional hook to ensure button works on CSS (prevents a crash with MMU enabled)
@@ -156,7 +198,8 @@ HOOK @ $806b5780
     mr r9, r3   # store r3
 
     %getSceneManager()  # \ get scene manager
-    lwz r3, 0x10 (r3)   # | load currentSequence (10th offset from scene manager) into r3
+    mr r10, r3          # | place scene manager in r3
+    lwz r3, 0x10 (r10)   # | load currentSequence (10th offset from scene manager) into r3
     lwz r3, 0 (r3)      # / load address of currentSequence name into r3
 
     lis r4, 0x8070      # \ load address of string "sqVsMelee" into r4
@@ -167,10 +210,41 @@ HOOK @ $806b5780
     mtctr r12               # |
     bctrl                   # /
 
+    cmpwi r3, 0         # \ if strings match, continue
+    mr r3, r9           # | restore r3
+    beq continue        # / proceed
+
+    lwz r3, 0x10 (r10)   # \ load currentSequence (10th offset from scene manager) into r3
+    lwz r3, 0 (r3)      # / load address of currentSequence name into r3
+
+    lis r4, 0x8070      # \ load address of string "sqSpMelee" into r4
+    ori r4, r4, 0x17F8  # /
+
+    lis r12, 0x803f         # \ call strcmp
+    ori r12, r12, 0xa3fc    # |
+    mtctr r12               # |
+    bctrl                   # /
+
+    cmpwi r3, 0         # \ if strings match, continue
+    beq continue        # / proceed
+
+    lwz r3, 0x10 (r10)   # \ load currentSequence (10th offset from scene manager) into r3
+    lwz r3, 0 (r3)       # / load address of currentSequence name into r3
+
+    lis r4, 0x8070      # \ load address of string "sqTraining" into r4
+    ori r4, r4, 0x1870  # /
+
+    lis r12, 0x803f         # \ call strcmp
+    ori r12, r12, 0xa3fc    # |
+    mtctr r12               # |
+    bctrl                   # /
+
     cmpwi r3, 0         # \ if strings don't match, skip
+    beq continue        # | continue
     mr r3, r9           # | restore r3
     bne skip            # / skip
 
+    continue:
     mr r3, r9           # \ store r3
     %getSceneManager()  # | get scene manager
     mr r8, r3           # | store scene manager in r8
@@ -210,7 +284,8 @@ HOOK @ $806b589c
     mr r9, r3   # store r3
 
     %getSceneManager()  # \ get scene manager
-    lwz r3, 0x10 (r3)   # | load currentSequence (10th offset from scene manager) into r3
+    mr r10, r3          # | place scene manager in r3
+    lwz r3, 0x10 (r10)   # | load currentSequence (10th offset from scene manager) into r3
     lwz r3, 0 (r3)      # / load address of currentSequence name into r3
 
     lis r4, 0x8070      # \ load address of string "sqVsMelee" into r4
@@ -221,10 +296,41 @@ HOOK @ $806b589c
     mtctr r12               # |
     bctrl                   # /
 
+    cmpwi r3, 0         # \ if strings match, continue
+    mr r3, r9           # | restore r3
+    beq continue        # / proceed
+
+    lwz r3, 0x10 (r10)   # \ load currentSequence (10th offset from scene manager) into r3
+    lwz r3, 0 (r3)      # / load address of currentSequence name into r3
+
+    lis r4, 0x8070      # \ load address of string "sqSpMelee" into r4
+    ori r4, r4, 0x17F8  # /
+
+    lis r12, 0x803f         # \ call strcmp
+    ori r12, r12, 0xa3fc    # |
+    mtctr r12               # |
+    bctrl                   # /
+
+    cmpwi r3, 0         # \ if strings match, continue
+    beq continue        # / proceed
+
+    lwz r3, 0x10 (r10)   # \ load currentSequence (10th offset from scene manager) into r3
+    lwz r3, 0 (r3)       # / load address of currentSequence name into r3
+
+    lis r4, 0x8070      # \ load address of string "sqTraining" into r4
+    ori r4, r4, 0x1870  # /
+
+    lis r12, 0x803f         # \ call strcmp
+    ori r12, r12, 0xa3fc    # |
+    mtctr r12               # |
+    bctrl                   # /
+
     cmpwi r3, 0         # \ if strings don't match, skip
+    beq continue        # | continue
     mr r3, r9           # | restore r3
     bne skip            # / skip
 
+    continue:
     mr r3, r9           # \ store r3
     %getSceneManager()  # | get scene manager
     mr r8, r3           # | store scene manager in r8
@@ -270,17 +376,17 @@ HOOK @ $806b6178 # moveCursor
     lwz r3, 0x10 (r9)       # \ load currentSequence (10th offset from scene manager) into r3
     lwz r3, 0 (r3)          # / load address of currentSequence name into r3
 
-    lis r4, 0x8070          # \ load address of string "sqVsMelee" into r4
-    ori r4, r4, 0x17E0      # /
+    lis r4, 0x8070          # \ load address of string "sqMenuMain" into r4
+    ori r4, r4, 0x17B0      # /
 
     lis r12, 0x803f         # \ call strcmp
     ori r12, r12, 0xa3fc    # |
     mtctr r12               # |
     bctrl                   # /
 
-    cmpwi r3, 0             # \ if strings don't match, skip
+    cmpwi r3, 0             # \ if strings match, skip
     mr r3, r10              # | restore r3
-    bne %end%               # / skip
+    beq %end%               # / skip
 
     mr r3, r10              # \ restore r3
     lwz r10, 0x0280 (r9)    # | check we are on Main Menu sequence
@@ -308,10 +414,10 @@ HOOK @ $80055584 # gmSetRuleSelStage - when we set which player is in control
     stb r7, 0 (r5) # original line, sets which player is in control
 }
 
-# this hook makes it so our button sends us to My Music instead of starting the match - VS
-HOOK @ $806dcb50 # hook for transitioning to a match
+# macro for the code that sends us to My Music
+.macro goToMyMusic(<register>,<case>)
 {
-    lwz r0, 0x0008 (r15) # original code
+    lwz r0, 0x0008 (<register>) # original code
 
     cmpwi r0, 0x7 # if we are not changing stages, check if we're returning from My Music
     bne %end%
@@ -366,8 +472,41 @@ HOOK @ $806dcb50 # hook for transitioning to a match
     %storeHiddenAlt(0x0c54, 0x283C)
 
     # if we're on SSS and flag is 1, go to main menu
-    li r0, 0x10 # set switch/case to pick main menu option
+    li r0, <case> # set switch/case to pick main menu option
+}
+
+# this hook makes it so our button sends us to My Music instead of starting the match - VS
+HOOK @ $806dcb50 # hook for transitioning to a match
+{
+    %goToMyMusic(r15, 0x10)
+}
+
+# this hook makes it so our button sends us to My Music instead of starting the match - Special
+HOOK @ $806deaac # hook for transitioning to a match
+{
+    %goToMyMusic(r30, 0x10)
+}
+
+# this hook makes it so our button sends us to My Music instead of starting the match - Training
+HOOK @ $806f1574 # hook for transitioning to a match
+{
+    %goToMyMusic(r15, 0xb)
+}
+
+# This hook is necessary to make training mode respect ASL selection when going to My Music
+HOOK @ $806f1914 # hook when transitioning to a training match
+{
+    lis r6, 0x8000      # \
+    ori r6, r6, 0x2810  # |
+    lwz r6, 0 (r6)      # | get flag
+    cmpwi r6, 1         # | if flag isn't 1 (going to My Music), just run original code
+    bne done            # /
+
+    li r5, 1    # set parameter 3 for the setNextSequence function to 1 (go to versus menu instead of solo), because for some reason this fixes ASL issues
     b %end%
+
+    done:
+    li r5, 0xC  # original code
 }
 
 # this hook makes it so we get warped to My Music instead of just the main menu
@@ -759,8 +898,8 @@ HOOK @ $806b46bc # loading sound ID in selectingProc:muSelectStageTask (for SSS)
     bctr
 }
 
-# this hook makes it so we go to SSS after backing out from My Music - VS
-HOOK @ $806dcbc8 # when transitioning to VS, we set this to tell the game to go to SSS after mem change
+# macro for the code that sends us to My Music
+.macro returnFromMyMusic(<register1>,<register2>)
 {
     lis r5, 0x8000      # \
     ori r5, r5, 0x2810  # |
@@ -769,7 +908,7 @@ HOOK @ $806dcbc8 # when transitioning to VS, we set this to tell the game to go 
     bne done            # /
 
     # otherwise, load SSS
-    li r24, 0x5
+    li <register1>, 0x5
 
     li r10, 6           # \
     stw r10, 0 (r5)     # / set our flag to 6
@@ -782,7 +921,25 @@ HOOK @ $806dcbc8 # when transitioning to VS, we set this to tell the game to go 
     stw r10, 0x0284 (r5)    # / setting this flag to 1 will make it go to SSS
 
     done:
-    stw r24, 0xc (r15) # original line
+    stw <register1>, 0xc (<register2>) # original line
+}
+
+# this hook makes it so we go to SSS after backing out from My Music - VS
+HOOK @ $806dcbc8 # when transitioning to VS, we set this to tell the game to go to SSS after mem change
+{
+    %returnFromMyMusic(r24, r15)
+}
+
+# this hook makes it so we go to SSS after backing out from My Music - Special
+HOOK @ $806deb64 # when transitioning to Special, we set this to tell the game to go to SSS after mem change
+{
+    %returnFromMyMusic(r21, r30)
+}
+
+# this hook makes it so we go to SSS after backing out from My Music - Training
+HOOK @ $806f15ac # when transitioning to Training, we set this to tell the game to go to SSS after mem change
+{
+    %returnFromMyMusic(r29, r15)
 }
 
 # this hook is used to ensure addresses correctly indicate we're on SSS after returning from My Music
@@ -969,3 +1126,33 @@ HOOK @ $806dce4c # hook in sqVsMelee/setNext when we are changing to main menu
 
 # fixes the code not working on expansion stages if build doesn't have salty runback fix
 op NOP @ $8010F9C0
+
+####################################################
+CSS Selections Preserved in Special Versus [Squidgy]
+####################################################
+op nop @ $806de9e8 # nop so we always enter the if
+
+# needs this so rules settings don't break
+HOOK @ $806de9f0 # set all necessary values
+{
+    stw	r0, 0x0008 (r31) # original line
+    stw r0, 0x11 (r31)
+}
+
+op nop @ $806de9f4 # nop so we still set up SSS stuff, normally it would skip it when we go in the if
+
+# this sets up the SSS stuff
+HOOK @ $806dea1c
+{
+    stw r3, -0x5B08 (r4) # original line, sets SSS stuff
+
+    lis r12, 0x806d     # jump to address to end function
+    ori r12, r12 0xea34
+    mtctr r12
+    bctr
+}
+
+##############################################
+CSS Selections Preserved in Training [Squidgy]
+##############################################
+op b 0x24 @ $806f14d8
