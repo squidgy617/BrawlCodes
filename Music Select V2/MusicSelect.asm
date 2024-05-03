@@ -12,7 +12,7 @@ Select music for match on SSS v2 [Squidgy]
 .alias button = 19
 # Button to select a song in song select
 # selectButton values : 21 (X), 20 (Y), 23 (Start/+)
-.alias selectButton = 23
+# .alias selectButton = 23 - THIS IS NOW CONTROLLED IN THE MODULE
 # Recommended to use the same button for opening song select and picking a song, 
 # but note that some buttons (such as Start) use a different number for each
 
@@ -426,18 +426,18 @@ HOOK @ $806f1574 # hook for transitioning to a match
 }
 
 # this hook makes it so we get warped to My Music instead of just the main menu
-HOOK @ $806cc058 # The instruction for when we go to main menu
+HOOK @ $806cc050 # The instruction for when we go to main menu
 {
-    lis r4, 0x8000      # \
-    ori r4, r4, 0x2810  # |
-    lwz r4, 0 (r4)      # | get flag
-    cmpwi r4, 1         # | if flag isn't 1 (going to My Music), just run original code
+    lis r8, 0x8000      # \
+    ori r8, r8, 0x2810  # |
+    lwz r8, 0 (r8)      # | get flag
+    cmpwi r8, 1         # | if flag isn't 1 (going to My Music), just run original code
     bne done            # /
 
     li r3, 12 # otherwise, force it to go to My Music
     
     done:
-    stw	r3, 0x03D0 (r31) # original code
+    cmpwi r5, 0 # original code
 }
 
 # this hook makes it so that the icons, thumbnails, and other elements don't display when we go to My Music
