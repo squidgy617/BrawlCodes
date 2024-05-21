@@ -1,7 +1,8 @@
-##########################################
-Select music for match on SSS v2 [Squidgy]
+##################################################
+Select music for match on SSS v2 [Squidgy, mawwwk]
 # updated to support StageEx
-##########################################
+# button no longer affects pages/random/back
+##################################################
 # Press a custom button while hovering over a stage to open the My Music screen
 # Press the custom button to select the song and automatically start the match
 # Press A to preview songs, or B to back out
@@ -9,7 +10,7 @@ Select music for match on SSS v2 [Squidgy]
 # --CONTROL OPTIONS--
 # Button to open song select
 # button values : 21 (X), 20 (Y), 19 (Start/+)
-.alias button = 19
+.alias button = 20
 # Button to select a song in song select
 # selectButton values : 21 (X), 20 (Y), 23 (Start/+)
 # .alias selectButton = 23 - THIS IS NOW CONTROLLED IN THE MODULE
@@ -170,6 +171,11 @@ HOOK @ $806b5864 # hook where we check if A is being pressed on SSS
     b %end%
 
     goToMyMusic:
+    # Check ID of selected stage icon
+    lwz r9, 0x244 (r27)         # r27 is muSelectStageTask, offset 0x244 is selected stage icon
+	cmpwi r9, 0x35; beq %end%	# Page button
+	cmpwi r9, 0x36;	beq %end%	# Random button
+	cmpwi r9, 0x37; beq %end%	# Back button
     lis r9, 0x8000     # \
     ori r9, r9, 0x2810 # |
     li r4, 1           # |
