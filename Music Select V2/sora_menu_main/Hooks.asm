@@ -204,7 +204,7 @@ loc_muProcOptSong_proc_playSound:
     # clear ASL input
     lis r8, 0x800C
     li r9, 0
-    stw r9, -0x615E (r8)
+    sth r9, -0x615E (r8)
 
     # This fixes an issue where looking at the songs for a stage alt would force that alt to load when the stage was selected
     li r9, 0            # \
