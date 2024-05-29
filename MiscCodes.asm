@@ -92,3 +92,46 @@ HOOK @ $8098d528
 
     stw	r6, 0x08C0 (r29)
 }
+
+###########################################################
+EX Trophy IDs Unlocked Automatically [Squidgy]
+# Any EX trophies will have one copy unlocked automatically
+# If you've already unlocked an EX trophy, 
+# this code will not change its count
+############################################################
+HOOK @ $80052778 # gmCheckCountFigure
+{
+    lwz r4, -0x4340 (r13)   # original line
+    mr r7, r3               # move trophy index to r7 so we can track it
+}
+
+HOOK @ $8005278c # gmCheckCountFigure
+{
+    rlwinm r3, r0, 0, 22, 31 (000003ff) # original line
+    
+    cmpwi r7, -1    # \ only change count if this is an Ex trophy
+    bne %end%       # / otherwise skip to end
+
+    cmpwi r3, 0     # \ only alter count if it is not unlocked at all
+    bne %end%       # / otherwise skip to end
+
+    li r3, 1        # set trophy count to 1
+}
+
+HOOK @ $800527b0 # gmCheckExistFigure
+{
+    lwz r4, -0x4340 (r13) # original line
+    mr r7, r3             # move trophy index to r7 so we can track it
+}
+
+HOOK @ $800527c4 # gmCheckExistFigure
+{
+    rlwinm r3, r0, 17, 31, 31 (00008000) # original line
+    cmpwi r7, -1    # \ only change unlock flag if this is an Ex trophy
+    bne %end%       # / otherwise skip to end
+
+    cmpwi r3, 0     # \ only alter unlock flag if it is not unlocked at all
+    bne %end%       # / otherwise skip to end
+
+    li r3, 1        # set trophy unlocked to 1
+}
