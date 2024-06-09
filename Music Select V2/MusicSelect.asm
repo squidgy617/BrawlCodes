@@ -163,6 +163,19 @@ HOOK @ $806b5864 # hook where we check if A is being pressed on SSS
     cmpwi r8, 1         # |
     beq skip            # / if we are, skip
 
+    # Check ID of selected stage icon
+    lwz r9, 0x244 (r27)         # r27 is muSelectStageTask, offset 0x244 is selected stage icon
+	cmpwi r9, 0x35; beq skip	# Page button
+	cmpwi r9, 0x36;	beq skip	# Random button
+	cmpwi r9, 0x37; beq skip	# Back button
+    # Check index of selected stage
+    lwz r9, 0x248 (r27)                 # \ r27 is muSelectStageTask, offset 0x248 is selected stage index
+    cmpwi r9, 0; bge buttonPressed      # / if stage index is -1, check if stage alt list is dispalyed
+    # If index is -1, check if we are on stage alt list
+    lwz r9, 0x228 (r27)                 # \ offset 0x228 is current page
+    cmpwi r9, 2; blt skip               # / if we aren't viewing stage alt list (page 2 aka Stage Builder), skip
+
+    buttonPressed:
     rlwinm. r0, r3, 0, button, button # if button is being pressed, treat that as a valid stage select button
     bne goToMyMusic
 
@@ -171,11 +184,6 @@ HOOK @ $806b5864 # hook where we check if A is being pressed on SSS
     b %end%
 
     goToMyMusic:
-    # Check ID of selected stage icon
-    lwz r9, 0x244 (r27)         # r27 is muSelectStageTask, offset 0x244 is selected stage icon
-	cmpwi r9, 0x35; beq %end%	# Page button
-	cmpwi r9, 0x36;	beq %end%	# Random button
-	cmpwi r9, 0x37; beq %end%	# Back button
     lis r9, 0x8000     # \
     ori r9, r9, 0x2810 # |
     li r4, 1           # |
@@ -247,6 +255,19 @@ HOOK @ $806b5780
     cmpwi r8, 1         # |
     beq skip            # / if we are, skip
 
+    # Check ID of selected stage icon
+    lwz r9, 0x244 (r27)         # r27 is muSelectStageTask, offset 0x244 is selected stage icon
+	cmpwi r9, 0x35; beq skip	# Page button
+	cmpwi r9, 0x36;	beq skip	# Random button
+	cmpwi r9, 0x37; beq skip	# Back button
+    # Check index of selected stage
+    lwz r9, 0x248 (r27)                 # \ r27 is muSelectStageTask, offset 0x248 is selected stage index
+    cmpwi r9, 0; bge buttonPressed      # / if stage index is -1, check if stage alt list is dispalyed
+    # If index is -1, check if we are on stage alt list
+    lwz r9, 0x228 (r27)                 # \ offset 0x228 is current page
+    cmpwi r9, 2; blt skip               # / if we aren't viewing stage alt list (page 2 aka Stage Builder), skip
+
+    buttonPressed:
     rlwinm. r0, r3, 0, button, button # if button is being pressed, treat that as a valid stage select button
     bne %end%
 
@@ -317,6 +338,19 @@ HOOK @ $806b589c
     cmpwi r8, 1         # |
     beq skip            # / if we are, skip
 
+    # Check ID of selected stage icon
+    lwz r9, 0x244 (r27)         # r27 is muSelectStageTask, offset 0x244 is selected stage icon
+	cmpwi r9, 0x35; beq skip	# Page button
+	cmpwi r9, 0x36;	beq skip	# Random button
+	cmpwi r9, 0x37; beq skip	# Back button
+    # Check index of selected stage
+    lwz r9, 0x248 (r27)                 # \ r27 is muSelectStageTask, offset 0x248 is selected stage index
+    cmpwi r9, 0; bge buttonPressed      # / if stage index is -1, check if stage alt list is dispalyed
+    # If index is -1, check if we are on stage alt list
+    lwz r9, 0x228 (r27)                 # \ offset 0x228 is current page
+    cmpwi r9, 2; blt skip               # / if we aren't viewing stage alt list (page 2 aka Stage Builder), skip
+
+    buttonPressed:
     rlwinm. r0, r3, 0, button, button # if button is being pressed, treat that as a valid stage select button
     bne %end%
 
