@@ -18,6 +18,9 @@ If the button you used is also used for a stage alt, you can access the track li
 
 Song delay is ignored when selecting a song with this method.
 
+### EX Trophy IDs Unlocked Automatically
+This code makes it so any trophies with IDs outside of those available in vanilla Brawl will be unlocked automatically. Essentially, if the trophy is a brand-new trophy that doesn't hijack another trophy's ID, it will be unlocked.
+
 ### Holding start to select a stage chooses random alt [No longer supported]
 This code is no longer being supported. It is likely not compatible with most modern builds.
 
