@@ -8,15 +8,19 @@ My personal Gecko/ASM codes for Super Smash Bros. Brawl.
 
 This code allows you to select what song you want to play during your next match by pressing a button while hovering over a stage.
 
-By default, press "Start" while hovering over a stage to open the track list. Press Start again to select the song and instantly start a match. Alternatively, press A to preview songs, or B to return to the SSS. You can change what button is used to trigger this by editing the aliases at the top of the code.
+There are two versions of this code. V1 is intended for Project+ version 2.5.2 and earlier, while V2 is intended for Project+ 3.0 and later. Version 1 requires edits only to the code itself to change buttons, while version 2 requires edits to the module source code.
+
+By default, press Start (if using V1) or Y (if using V2) while hovering over a stage to open the track list. Then press Start to select the song and instantly start a match. Alternatively, press A to preview songs, or B to return to the SSS. 
+
+You can change what button is used to open the menu by editing the "button" alias at the top of the MusicSelect.asm file. To change what button selects a song from the music list, you must edit the "selectButton" alias in Hooks.asm of the module source (if using V2) or  at the top of MusicSelect.asm (if using V1). If using V2, you will need to recompile sora_menu_main.rel from the module source using [Reltools](https://github.com/Sammi-Husky/reltools).
 
 If the button you used is also used for a stage alt, you can access the track list for that alt by holding the button rather than pressing it. To play said alt without selecting a track, only start holding the button _after_ pressing A (this may require some quick timing).
 
-This functionality only works in versus mode, not special versus, training, or rotation.
-
 Song delay is ignored when selecting a song with this method.
 
-### Holding start to select a stage chooses random alt
+### Holding start to select a stage chooses random alt [No longer supported]
+This code is no longer being supported. It is likely not compatible with most modern builds.
+
 This code makes it so that holding "Start" to pick a stage, including selecting a random stage, will cause the stage alt to be picked at random (e.g. it will choose between the main alt, R-alt, L-alt, etc etc).
 
 Currently, this only chooses between the default stage, L-alt, R-alt, and Z-alt. It can be edited relatively easily to choose between more.
