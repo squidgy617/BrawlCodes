@@ -34,3 +34,6 @@ This code only works with Project+'s stage list system. There are two versions o
 This code allows you to specify items to be replaced with other items whenever they spawn. For example, by default the code has a line to replace the Cracker Launcher with a Capsule, so whenever a Cracker Launcher would spawn a Capsule will spawn instead.
 
 The code is designed to be easy to edit. To add more items to be replaced, simply copy the line with the `%replaceItem()` call and change the parameters - the first parameter is the item ID to replace, and the second is the item ID to replace it with.
+
+## Team Glow CSS Toggle (Team Glow Only Version)
+This is a modified version of the code `[Legacy TE] Team Glow CSS Toggle (Team Glow Only Version) [PyotrLuzhin, Fracture, Yohan1044]` which adds the Team Glow option to builds like Legacy TE and Project+. This version makes it so that Team Glow is the _only_ team battle option, making the vanilla team mode inaccessible. Useful if you don't have team recolors for every fighter in your build. If your build has the original code in it, it should be replaced with this one.
