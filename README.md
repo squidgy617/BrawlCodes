@@ -37,3 +37,9 @@ The code is designed to be easy to edit. To add more items to be replaced, simpl
 
 ## Team Glow CSS Toggle (Team Glow Only Version)
 This is a modified version of the code `[Legacy TE] Team Glow CSS Toggle (Team Glow Only Version) [PyotrLuzhin, Fracture, Yohan1044]` which adds the Team Glow option to builds like Legacy TE and Project+. This version makes it so that Team Glow is the _only_ team battle option, making the vanilla team mode inaccessible. Useful if you don't have team recolors for every fighter in your build. If your build has the original code in it, it should be replaced with this one.
+
+# Modules
+This section covers module source code stored in this repo. These modules can be compiled with [Reltools](https://github.com/Sammi-Husky/reltools).
+
+## Spellsword Ganon
+There are two versions of this module: ft_ganon replaces the default Project+/P+Ex Ganon module, while ft_swordganon replaces the Sword Ganon module from PMEX REMIX. This module has custom code for [Spellsword Ganon](https://gamebanana.com/mods/490270) that prevents him from reflecting an orb while simultaneously throwing one.
