@@ -48,3 +48,6 @@ This section covers module source code stored in this repo. These modules can be
 
 ## Spellsword Ganon
 There are two versions of this module: ft_ganon replaces the default Project+/P+Ex Ganon module, while ft_swordganon replaces the Sword Ganon module from PMEX REMIX. This module has custom code for [Spellsword Ganon](https://gamebanana.com/mods/490270) that prevents him from reflecting an orb while simultaneously throwing one.
+
+## Shadow with a Gun
+This module has custom code for [Shadow with a Gun](https://gamebanana.com/mods/532339) that allows his custom gun item to fire custom projectiles.
