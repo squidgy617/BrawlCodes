@@ -29,6 +29,9 @@ The code is designed to be easy to edit. To add more items to be replaced, simpl
 ## No Announcer Sounds from Picking Characters
 This code makes it so announcer calls do not play on the CSS when picking a fighter. Useful if you can't get announcer calls for every fighter in your build and want things consistent. This concept was originally done by Eon, but was modified by me.
 
+## Classic Skips from CSS to Trophy Screen
+This code makes it so classic mode has you select a fighter and then skips straight to the trophy get screen, followed by the credits and ending movie. This is useful if you want to test that your trophies, credits icons, credits music, and ending movies are all set up correctly. The fighter's credits icon will not be displayed at the top of the list like it usually is, but will be displayed in the overall list - I haven't figured out how to address this yet.
+
 ## Holding start to select a stage chooses random alt [No longer supported]
 This code is no longer being supported. It is likely not compatible with most modern builds.
 
