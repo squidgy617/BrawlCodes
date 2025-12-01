@@ -65,6 +65,32 @@ No announcer sound from picking chars [Squidgy, Eon]
 ####################################################
 op li r4, 0x1FDE @ $8068afd8
 
+#################################################
+Classic Skips from CSS to Trophy Screen [Squidgy]
+# For testing
+#################################################
+HOOK @ $806e0148
+{
+	lwz r0, 0x8(r15)
+	cmpwi r0, 5				# check if scene is the one after CSS
+	bne %end%
+	lis r3, 0x805a			# \ get GameGlobal
+	ori r3, r3, 0x00e0		# |
+	lwz r3, 0x0(r3)			# |
+	lwz r4, 0x8(r3)			# | GameGlobal->gmGlobalModeMelee
+	lbz r0, 0x98(r4)		# / gmGlobalModeMelee->playerInitData->characterKind
+	stb r0, 0x34(r15)		# store character kind as trophy result
+	stb r0, 0x33(r15)		# store character kind to show on credits
+	lwz r3, 0x18(r3)		# \ GameGlobal->gmResultInfo
+	stb r0, 0x24(r3)		# / store character kind in gmResultInfo->gmPlayerResultInfo->characterKind
+	li r0, 0x11
+	stw r0, 0xC(r15)		# set scene after next to 0x11, trophy get
+	li r0, 0x2
+	stb r0, 0x30 (r15)		# not sure what this is for, something to do with next scene
+	li r0, 0x2
+	stw r0, 0x8 (r15)		# set next scene to 0x2, setup which will redirect to next scene
+}
+
 #############################################################################
 Holding start to select a stage chooses random alt P+ 2.4.2 Version [Squidgy]
 # DEPRECATED
